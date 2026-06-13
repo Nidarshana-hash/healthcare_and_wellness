@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Performance Prediction</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .hero-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 3rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .form-control {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            transition: border-color 0.3s ease;
+        }
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        .prediction-result {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+        .feature-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+        .feature-card:hover {
+            background: rgba(255, 255, 255, 1);
+            transform: scale(1.02);
+        }
+        .progress-bar {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-5">
+        <!-- Hero Section -->
+        <div class="hero-section text-center text-white">
+            <h1 class="display-4 fw-bold mb-3">
+                <i class="fas fa-graduation-cap me-3"></i>
+                Student Performance Predictor
+            </h1>
+            <p class="lead mb-4">
+                Analyze and predict student academic performance with advanced analytics
+            </p>
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <i class="fas fa-chart-line fa-3x mb-2"></i>
+                            <h5>Accurate Predictions</h5>
+                        </div>
+                        <div class="col-md-4">
+                            <i class="fas fa-brain fa-3x mb-2"></i>
+                            <h5>AI-Powered</h5>
+                        </div>
+                        <div class="col-md-4">
+                            <i class="fas fa-users fa-3x mb-2"></i>
+                            <h5>Student Insights</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Input Form -->
+            <div class="col-lg-8">
+                <div class="card p-4">
+                    <h3 class="card-title mb-4">
+                        <i class="fas fa-clipboard-list me-2"></i>
+                        Student Information
+                    </h3>
+                    <form id="predictionForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="studentName" class="form-label fw-semibold">Student Name</label>
+                                <input type="text" class="form-control" id="studentName" placeholder="Enter student name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="studentId" class="form-label fw-semibold">Student ID</label>
+                                <input type="text" class="form-control" id="studentId" placeholder="Enter student ID" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="previousGrade" class="form-label fw-semibold">Previous Grade (GPA)</label>
+                                <input type="number" class="form-control" id="previousGrade" min="0" max="4" step="0.1" placeholder="0.0 - 4.0" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="attendance" class="form-label fw-semibold">Attendance Rate (%)</label>
+                                <input type="number" class="form-control" id="attendance" min="0" max="100" placeholder="0 - 100" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="studyHours" class="form-label fw-semibold">Weekly Study Hours</label>
+                                <input type="number" class="form-control" id="studyHours" min="0" max="168" placeholder="Hours per week" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="assignments" class="form-label fw-semibold">Assignment Completion (%)</label>
+                                <input type="number" class="form-control" id="assignments" min="0" max="100" placeholder="0 - 100" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="participation" class="form-label fw-semibold">Class Participation</label>
+                                <select class="form-control" id="participation" required>
+                                    <option value="">Select level</option>
+                                    <option value="low">Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="extracurricular" class="form-label fw-semibold">Extracurricular Activities</label>
+                                <select class="form-control" id="extracurricular" required>
+                                    <option value="">Select involvement</option>
+                                    <option value="none">None</option>
+                                    <option value="minimal">Minimal</option>
+                                    <option value="moderate">Moderate</option>
+                                    <option value="extensive">Extensive</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="motivation" class="form-label fw-semibold">Motivation Level</label>
+                            <input type="range" class="form-range" id="motivation" min="1" max="10" value="5">
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">Low</small>
+                                <small class="text-muted">High</small>
+                            </div>
+                        </div>
+
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-magic me-2"></i>
+                                Predict Performance
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Results Panel -->
+            <div class="col-lg-4">
+                <div class="card p-4" id="resultsCard" style="display: none;">
+                    <h4 class="card-title mb-4">
+                        <i class="fas fa-chart-pie me-2"></i>
+                        Prediction Results
+                    </h4>
+                    <div id="predictionResult"></div>
+                    <div class="chart-container mb-3">
+                        <canvas id="performanceChart"></canvas>
+                    </div>
+                    <div id="recommendations"></div>
+                </div>
+
+                <!-- Features -->
+                <div class="feature-card">
+                    <h5><i class="fas fa-lightbulb me-2"></i>Key Features</h5>
+                    <ul class="list-unstyled mb-0">
+                        <li><i class="fas fa-check text-success me-2"></i>Real-time predictions</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Visual analytics</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Personalized recommendations</li>
+                        <li><i class="fas fa-check text-success me-2"></i>Performance tracking</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Prediction logic (placeholder - replace with actual model)
+        function predictPerformance(data) {
+            // Simple algorithm for demonstration
+            let score = 0;
+
+            // GPA weight: 30%
+            score += (data.previousGrade / 4) * 30;
+
+            // Attendance weight: 20%
+            score += (data.attendance / 100) * 20;
+
+            // Study hours weight: 15%
+            score += Math.min(data.studyHours / 40, 1) * 15;
+
+            // Assignments weight: 15%
+            score += (data.assignments / 100) * 15;
+
+            // Participation weight: 10%
+            const participationScores = { low: 0.3, medium: 0.6, high: 1 };
+            score += participationScores[data.participation] * 10;
+
+            // Extracurricular weight: 5%
+            const extracurricularScores = { none: 0.2, minimal: 0.4, moderate: 0.7, extensive: 1 };
+            score += extracurricularScores[data.extracurricular] * 5;
+
+            // Motivation weight: 5%
+            score += (data.motivation / 10) * 5;
+
+            return Math.min(Math.max(score, 0), 100);
+        }
+
+        function getGrade(prediction) {
+            if (prediction >= 90) return 'A';
+            if (prediction >= 80) return 'B';
+            if (prediction >= 70) return 'C';
+            if (prediction >= 60) return 'D';
+            return 'F';
+        }
+
+        function getRecommendations(prediction, data) {
+            const recommendations = [];
+
+            if (data.attendance < 80) {
+                recommendations.push("Increase attendance to improve performance");
+            }
+            if (data.studyHours < 20) {
+                recommendations.push("Consider increasing study hours");
+            }
+            if (data.assignments < 80) {
+                recommendations.push("Focus on completing assignments on time");
+            }
+            if (data.participation === 'low') {
+                recommendations.push("Increase class participation");
+            }
+
+            if (recommendations.length === 0) {
+                recommendations.push("Keep up the excellent work!");
+            }
+
+            return recommendations;
+        }
+
+        // Form submission handler
+        document.getElementById('predictionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = {
+                name: document.getElementById('studentName').value,
+                id: document.getElementById('studentId').value,
+                previousGrade: parseFloat(document.getElementById('previousGrade').value),
+                attendance: parseInt(document.getElementById('attendance').value),
+                studyHours: parseInt(document.getElementById('studyHours').value),
+                assignments: parseInt(document.getElementById('assignments').value),
+                participation: document.getElementById('participation').value,
+                extracurricular: document.getElementById('extracurricular').value,
+                motivation: parseInt(document.getElementById('motivation').value)
+            };
+
+            const prediction = predictPerformance(formData);
+            const grade = getGrade(prediction);
+            const recommendations = getRecommendations(prediction, formData);
+
+            // Display results
+            const resultsCard = document.getElementById('resultsCard');
+            const predictionResult = document.getElementById('predictionResult');
+            const recommendationsDiv = document.getElementById('recommendations');
+
+            predictionResult.innerHTML = `
+                <div class="prediction-result text-center mb-3">
+                    <h3 class="mb-2">Predicted Performance</h3>
+                    <div class="display-4 fw-bold mb-2">${prediction.toFixed(1)}%</div>
+                    <div class="h4">Grade: ${grade}</div>
+                </div>
+                <div class="mb-3">
+                    <h6>Performance Breakdown</h6>
+                    <div class="progress mb-2">
+                        <div class="progress-bar" role="progressbar" style="width: ${prediction}%"></div>
+                    </div>
+                </div>
+            `;
+
+            recommendationsDiv.innerHTML = `
+                <h6>Recommendations</h6>
+                <ul class="list-group list-group-flush">
+                    ${recommendations.map(rec => `<li class="list-group-item"><i class="fas fa-arrow-right me-2 text-primary"></i>${rec}</li>`).join('')}
+                </ul>
+            `;
+
+            resultsCard.style.display = 'block';
+            resultsCard.scrollIntoView({ behavior: 'smooth' });
+
+            // Create chart
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['GPA', 'Attendance', 'Study Hours', 'Assignments', 'Participation', 'Activities', 'Motivation'],
+                    datasets: [{
+                        label: 'Performance Factors',
+                        data: [
+                            (formData.previousGrade / 4) * 100,
+                            formData.attendance,
+                            Math.min(formData.studyHours / 40 * 100, 100),
+                            formData.assignments,
+                            {low: 30, medium: 60, high: 100}[formData.participation],
+                            {none: 20, minimal: 40, moderate: 70, extensive: 100}[formData.extracurricular],
+                            (formData.motivation / 10) * 100
+                        ],
+                        backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(102, 126, 234, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        });
+
+        // Add some interactive effects
+        document.querySelectorAll('.feature-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'scale(1.05)';
+            });
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>
